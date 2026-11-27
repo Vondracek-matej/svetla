@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Světla">
+<meta name="robots" content="noindex">
+<title>Startovní světla 238</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one-screen pit-wall timing monitor — start gantry on top, timing tower and leaderboard below */
+:root {
+  --asphalt: #14171c;
+  --panel: #1c2027;
+  --line: #2b313b;
+  --ink: #e9edf2;
+  --muted: #8b95a3;
+  --red: #ff2a2a;
+  --red-off: #3a1414;
+  --purple: #b46cff;   /* fastest overall, like a timing screen */
+  --green: #2fdc7a;    /* personal best */
+  --yellow: #ffd23f;   /* slower than PB */
+  --display: "Saira Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+html, body { background: var(--asphalt); color: var(--ink); }
+body { font-family: var(--body); font-size: 15px; line-height: 1.45; }
+.wrap {
+  max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+  display: grid; gap: 20px;
+}
+header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 6vw, 44px); letter-spacing: .01em; margin: 0; line-height: 1; text-transform: uppercase; text-wrap: balance; }
+h1 .num { color: var(--red); }
+.sub { color: var(--muted); margin: 6px 0 0; }
+.label { font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: .12em; font-size: 13px; color: var(--muted); }
+
+/* Players */
+.players { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip {
+  font: 600 15px var(--body); color: var(--ink); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--asphalt); border-color: var(--ink); }
+.chip:focus-visible, button:focus-visible, .gantry:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+.add { display: flex; gap: 6px; }
+.add input { font: 500 15px var(--body); background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; width: 120px; }
+
+/* Gantry */
+.gantry {
+  position: relative; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+  background: linear-gradient(#0d0f12, #101318); border: 1px solid var(--line); border-radius: 18px;
+  padding: clamp(18px, 4vw, 34px) clamp(12px, 3vw, 28px);
+  display: grid; gap: 22px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.beam { height: 10px; background: #2a2e35; border-radius: 3px; margin: 0 4%; }
+.lights { display: grid; grid-template-columns: repeat(5, 1fr); gap: clamp(8px, 2.5vw, 22px); margin-top: -18px; }
+.pod { background: #050607; border-radius: 12px; padding: clamp(6px, 1.4vw, 12px); display: grid; gap: clamp(6px, 1.4vw, 10px); border: 1px solid #22262d; }
+.bulb { aspect-ratio: 1; max-width: 100%; border-radius: 50%; background: var(--red-off); box-shadow: inset 0 -4px 8px rgba(0,0,0,.6); transition: background .04s, box-shadow .04s; }
+.pod.on .bulb { background: radial-gradient(circle at 40% 35%, #ffb3b3 0, var(--red) 35%, #c00 100%); box-shadow: 0 0 28px 6px rgba(255,42,42,.55); }
+.readout { text-align: center; display: grid; gap: 4px; min-height: 120px; align-content: center; }
+.time { font-family: var(--mono); font-weight: 700; font-size: clamp(48px, 13vw, 96px); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.time small { font-size: .35em; color: var(--muted); margin-left: 6px; }
+.msg { font-family: var(--display); font-weight: 700; font-size: clamp(20px, 4.5vw, 28px); text-transform: uppercase; letter-spacing: .04em; }
+.hint { color: var(--muted); font-size: 14px; }
+.c-purple { color: var(--purple); } .c-green { color: var(--green); } .c-yellow { color: var(--yellow); } .c-red { color: var(--red); }
+
+.controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+.btn { font: 700 16px var(--display); text-transform: uppercase; letter-spacing: .08em; border-radius: 10px; padding: 10px 18px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+.btn.ghost { background: transparent; color: var(--muted); }
+
+/* Tower + board */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 680px) { .grid2 { grid-template-columns: 1fr; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+td, th { padding: 7px 6px; text-align: left; border-bottom: 1px solid var(--line); }
+th { font: 700 12px var(--display); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+td.t { font-family: var(--mono); font-weight: 700; text-align: right; }
+th.r { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+.pos { font-family: var(--display); font-weight: 800; width: 28px; color: var(--muted); }
+.empty { color: var(--muted); padding: 8px 0; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: currentColor; }
+.legend .lp { color: var(--purple); } .legend .lg { color: var(--green); } .legend .ly { color: var(--yellow); }
+.legend span { color: var(--muted); } .legend span.lp::before { background: var(--purple); } .legend span.lg::before { background: var(--green); } .legend span.ly::before { background: var(--yellow); }
+.scale { display: grid; gap: 4px; font-size: 14px; }
+.scale div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--line); padding: 4px 0; }
+.scale b { font-family: var(--mono); font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .bulb { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Startovní světla <span class="num">#238</span></h1>
+      <p class="sub">Pět červených rozsvítí, pak zhasnou. Jakmile zhasnou, klepni. Kdo je rychlejší?</p>
+    </div>
+    <button class="btn ghost" id="sound" type="button" aria-pressed="true">Zvuk: zap</button>
+  </header>
+
+  <section aria-label="Jezdec" style="display:grid;gap:8px">
+    <div class="label">Kdo jede</div>
+    <div class="players" id="players"></div>
+  </section>
+
+  <div class="gantry" id="gantry" tabindex="0" role="button" aria-label="Startovní rampa. Klepni nebo zmáčkni mezerník.">
+    <div class="beam" aria-hidden="true"></div>
+    <div class="lights" id="lights" aria-hidden="true"></div>
+    <div class="readout" aria-live="polite">
+      <div class="time" id="time">0.000<small>s</small></div>
+      <div class="msg" id="msg">Připraven?</div>
+      <div class="hint" id="hint">Klepni sem nebo zmáčkni mezerník a začne start.</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <section class="card">
+      <div class="controls">
+        <div class="label" id="towerTitle">Dnešní pokusy</div>
+        <button class="btn ghost" id="clearSession" type="button">Vymazat dnešní</button>
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Jezdec</th><th class="r">Reakce</th></tr></thead>
+        <tbody id="tower"></tbody>
+      </table>
+      <div class="legend"><span class="lp">nejrychlejší ze všech</span><span class="lg">osobní rekord</span><span class="ly">pomalejší</span></div>
+    </section>
+
+    <section class="card">
+      <div class="label">Rekordy</div>
+      <table>
+        <thead><tr><th>Poř.</th><th>Jezdec</th><th class="r">Nejlepší</th><th class="r">Průměr</th></tr></thead>
+        <tbody id="board"></tbody>
+      </table>
+      <div class="label" style="margin-top:6px">Jak na tom jsi</div>
+      <div class="scale">
+        <div><span>Pole position</span><b>pod 0,200 s</b></div>
+        <div><span>Na špici</span><b>0,200 – 0,250 s</b></div>
+        <div><span>Střed pole</span><b>0,250 – 0,320 s</b></div>
+        <div><span>Spal jsi na startu</span><b>nad 0,320 s</b></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  const KEY = "startovni-svetla-238";
+  const store = {
+    load() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+    save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
+  };
+  // Example data so the page is not empty the first time (marked as example)
+  const fresh = {
+    players: ["Hráč 1", "Hráč 2", "Hráč 3"],
+    current: "Hráč 1",
+    results: {},       // player -> array of ms (all time)
+    session: [],       // {p, ms|null}
+    sound: true
+  };
+  let data = Object.assign({}, fresh, store.load() || {});
+  if (!data.players.includes(data.current)) data.current = data.players[0];
+
+  const $ = (id) => document.getElementById(id);
+  const lightsEl = $("lights"), timeEl = $("time"), msgEl = $("msg"), hintEl = $("hint");
+  const pods = [];
+  for (let i = 0; i < 5; i++) {
+    const pod = document.createElement("div");
+    pod.className = "pod";
+    pod.innerHTML = '<div class="bulb"></div><div class="bulb"></div>';
+    lightsEl.appendChild(pod); pods.push(pod);
+  }
+
+  // ---- sound ----
+  let ac = null;
+  function beep(freq, dur) {
+    if (!data.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = "square"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.06, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + dur);
+    } catch (e) {}
+  }
+
+  // ---- race logic ----
+  let state = "idle";   // idle | arming | hold | go | done
+  let timers = [], t0 = 0;
+  const fmt = (ms) => (ms / 1000).toFixed(3).replace(".", ",");
+  function setLights(n) { pods.forEach((p, i) => p.classList.toggle("on", i < n)); }
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+  function start() {
+    clearTimers(); state = "arming"; setLights(0);
+    timeEl.innerHTML = '0,000<small>s</small>'; timeEl.className = "time";
+    msgEl.textContent = "Pozor…"; msgEl.className = "msg"; hintEl.textContent = "Neklepej, dokud svítí!";
+    for (let i = 1; i <= 5; i++) {
+      timers.push(setTimeout(() => { setLights(i); beep(440, 0.12); if (i === 5) hold(); }, i * 1000));
+    }
+  }
+  function hold() {
+    state = "hold";
+    const wait = 200 + Math.random() * 2800;   // 0.2–3 s, like a real start
+    timers.push(setTimeout(() => {
+      setLights(0); state = "go"; t0 = performance.now(); beep(880, 0.08);
+      msgEl.textContent = "JEĎ!"; msgEl.className = "msg c-green";
+    }, wait));
+  }
+  function jump() {
+    clearTimers(); state = "done";
+    setLights(5);
+    timeEl.innerHTML = 'FALEŠNÝ'; timeEl.className = "time c-red";
+    msgEl.textContent = "Falešný start, průjezd boxy!"; msgEl.className = "msg c-red";
+    hintEl.textContent = "Klepni znovu a zkus to ještě jednou.";
+    data.session.push({ p: data.current, ms: null }); save(); render();
+    setTimeout(() => setLights(0), 900);
+  }
+  function finish() {
+    const ms = Math.round(performance.now() - t0);
+    state = "done";
+    const all = allBest(), pb = personalBest(data.current);
+    (data.results[data.current] = data.results[data.current] || []).push(ms);
+    data.session.push({ p: data.current, ms });
+    let cls = "c-yellow", word = rating(ms);
+    if (all === null || ms < all) { cls = "c-purple"; word = "Nejrychlejší ze všech! " + word; }
+    else if (pb === null || ms < pb) { cls = "c-green"; word = "Osobní rekord! " + word; }
+    timeEl.innerHTML = fmt(ms) + '<small>s</small>'; timeEl.className = "time " + cls;
+    msgEl.textContent = word; msgEl.className = "msg " + cls;
+    hintEl.textContent = "Klepni znovu na další start.";
+    save(); render();
+  }
+  function rating(ms) {
+    if (ms < 200) return "Pole position";
+    if (ms < 250) return "Na špici";
+    if (ms < 320) return "Střed pole";
+    return "Spal jsi na startu";
+  }
+  function press(e) {
+    if (e) e.preventDefault();
+    if (state === "idle" || state === "done") start();
+    else if (state === "arming" || state === "hold") jump();
+    else if (state === "go") finish();
+  }
+  $("gantry").addEventListener("pointerdown", press);
+  document.addEventListener("keydown", (e) => {
+    if (e.code === "Space" || e.code === "Enter") {
+      if (document.activeElement && document.activeElement.tagName === "INPUT") return;
+      if (e.repeat) return;
+      press(e);
+    }
+  });
+
+  // ---- stats ----
+  function personalBest(p) { const r = data.results[p] || []; return r.length ? Math.min(...r) : null; }
+  function allBest() { let b = null; for (const p in data.results) { const x = personalBest(p); if (x !== null && (b === null || x < b)) b = x; } return b; }
+  function avg(arr) { return arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null; }
+
+  // ---- render ----
+  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+  function renderPlayers() {
+    const el = $("players"); el.innerHTML = "";
+    data.players.forEach((p) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.textContent = p;
+      b.setAttribute("aria-pressed", p === data.current ? "true" : "false");
+      b.addEventListener("click", () => { data.current = p; save(); renderPlayers(); });
+      el.appendChild(b);
+    });
+    const form = document.createElement("form"); form.className = "add";
+    form.innerHTML = '<input id="newPlayer" placeholder="Další jezdec" maxlength="16" aria-label="Jméno dalšího jezdce"><button class="chip" type="submit">Přidat</button>';
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = form.querySelector("input").value.trim();
+      if (v && !data.players.includes(v)) { data.players.push(v); data.current = v; save(); renderPlayers(); render(); }
+    });
+    el.appendChild(form);
+  }
+  function render() {
+    // tower: last 10 session attempts, newest first
+    const tb = $("tower"); const s = data.session.slice(-10).reverse();
+    const all = allBest();
+    if (!s.length) tb.innerHTML = '<tr><td colspan="3" class="empty">Zatím žádný start. Klepni na rampu nahoře.</td></tr>';
+    else tb.innerHTML = s.map((r, i) => {
+      const n = data.session.length - i;
+      if (r.ms === null) return `<tr><td class="pos">${n}</td><td>${esc(r.p)}</td><td class="t c-red">FALEŠNÝ</td></tr>`;
+      const pb = personalBest(r.p);
+      const cls = r.ms === all ? "c-purple" : r.ms === pb ? "c-green" : "c-yellow";
+      return `<tr><td class="pos">${n}</td><td>${esc(r.p)}</td><td class="t ${cls}">${fmt(r.ms)}</td></tr>`;
+    }).join("");
+    // board
+    const rows = data.players.map(p => ({ p, best: personalBest(p), avg: avg(data.results[p] || []), n: (data.results[p] || []).length }))
+      .filter(r => r.best !== null).sort((a, b) => a.best - b.best);
+    const bb = $("board");
+    if (!rows.length) bb.innerHTML = '<tr><td colspan="4" class="empty">Rekordy se objeví po prvním startu.</td></tr>';
+    else bb.innerHTML = rows.map((r, i) => `<tr><td class="pos">${i + 1}.</td><td>${esc(r.p)} <span class="hint">(${r.n}×)</span></td><td class="t ${i === 0 ? "c-purple" : ""}">${fmt(r.best)}</td><td class="t">${fmt(r.avg)}</td></tr>`).join("");
+  }
+  function save() { store.save(data); }
+
+  $("clearSession").addEventListener("click", () => { data.session = []; save(); render(); });
+  const sBtn = $("sound");
+  function renderSound() { sBtn.textContent = "Zvuk: " + (data.sound ? "zap" : "vyp"); sBtn.setAttribute("aria-pressed", data.sound ? "true" : "false"); }
+  sBtn.addEventListener("click", () => { data.sound = !data.sound; save(); renderSound(); });
+
+  renderPlayers(); render(); renderSound();
+})();
+</script>
+</body></html>
